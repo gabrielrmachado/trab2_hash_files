@@ -4,41 +4,64 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <time.h>
 #include "index.h"
 
 static int TABLE_SIZE = 0;
 
 typedef struct registry
 {
-    char* key;
-    int line_occurrence;
+    char* keyword;
+    int* line_occurrence;
     struct registry* next;
 } Registry;
 
 struct index
 {
+    int* hash_keys;  // armazena as chaves hash calculadas para cada keyword.
     Registry* hash_table;
 };
 
 static int hash_function(char* key)
 {
-    return 0;
+    srand(time(NULL));
+    int sum = 0, len = strlen(key);
+
+    for (int i = 0; i < len; i++)
+        sum += (int)key[i] * (rand() % len-1);
+
+    return sum % TABLE_SIZE;
 }
 
 int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 {
-    // inicializa o índice.
+    // inicializa o índice remissivo.
     *idx = (Index*)malloc(sizeof(Index));
-    (*idx)->hash_table = (Registry*)malloc(sizeof(Registry) * TABLE_SIZE);
 
     // faz a leitura do arquivo de palavras-chave.
     FILE* file = fopen(key_file, "r");
     if (file != NULL)
     {
-        char* str;
+        char* str = NULL;
+        int num_keywords = 0;
+
+        // conta o número de palavras-chave para calcular um valor de TABLE_SIZE.
+        while (fgets(str, 17, file) != NULL)
+            num_keywords++;
+
+        fclose(file);
+
+        // calcula, a partir do nº de palavras-chave, um valor de TABLE_SIZE 50% maior.
+        TABLE_SIZE = num_keywords * 1.5;
+        (*idx)->hash_table = (Registry*)malloc(sizeof(Registry) * TABLE_SIZE);
+
+        // lê novamente o arquivo 'keys_file.txt', desta vez para armazenar as chaves no índice.
+        file = fopen(key_file, "r");
         while (fgets(str, 17, file) != NULL)
         {
-            printf("%s", str);
+            int hash_idx = hash_function(str);
+
         }
     }
     else
