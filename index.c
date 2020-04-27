@@ -6,9 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 #include "index.h"
-
-static int TABLE_SIZE = 0;
 
 typedef struct registry
 {
@@ -19,11 +18,11 @@ typedef struct registry
 
 struct index
 {
-    int* hash_keys;  // armazena as chaves hash calculadas para cada keyword.
-    Registry* hash_table;
+    int TABLE_SIZE;
+    Registry** hash_table;
 };
 
-static int hash_function(char* key)
+static int hash_function(char* key, int TABLE_SIZE)
 {
     srand(time(NULL));
     int sum = 0, len = strlen(key);
@@ -52,16 +51,33 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 
         fclose(file);
 
-        // calcula, a partir do nº de palavras-chave, um valor de TABLE_SIZE 50% maior.
-        TABLE_SIZE = num_keywords * 1.5;
-        (*idx)->hash_table = (Registry*)malloc(sizeof(Registry) * TABLE_SIZE);
+        // calcula, a partir do nº de palavras-chave, um valor de TABLE_SIZE 40% maior.
+        (*idx)->TABLE_SIZE = num_keywords * 1.4;
+        (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->TABLE_SIZE);
+
+        for (int i = 0; i < (*idx)->TABLE_SIZE; i++)
+            (*idx)->hash_table[i] = NULL;
 
         // lê novamente o arquivo 'keys_file.txt', desta vez para armazenar as chaves no índice.
         file = fopen(key_file, "r");
         while (fgets(str, 17, file) != NULL)
         {
-            int hash_idx = hash_function(str);
+            // calcula a chave a partir da palavra-chave fornecida.
+            int hash_idx = hash_function(str, (*idx)->TABLE_SIZE);
+            Registry* reg_prev = (*idx)->hash_table[hash_idx];
+            Registry* reg_next = (*idx)->hash_table[hash_idx];
+            bool found = false;
 
+            // verifica se o slot correspondente à hash_key está vazio.
+//            while (reg->next != NULL)
+//            {
+//                // a palavra-chave já existe.
+//                if (!strcmp(reg->keyword, str))
+//                {
+//                    found = true;
+//                    break;
+//                }
+//            }
         }
     }
     else
