@@ -12,13 +12,15 @@
 typedef struct registry
 {
     char* keyword;
+    int numOccurrences;
     int* line_occurrence;
     struct registry* next;
 } Registry;
 
 struct index
 {
-    int TABLE_SIZE;
+    int tableSize;
+    int numKeywords;
     Registry** hash_table;
 };
 
@@ -37,6 +39,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 {
     // inicializa o índice remissivo.
     *idx = (Index*)malloc(sizeof(Index));
+    (*idx)->numKeywords = 0;
 
     // faz a leitura do arquivo de palavras-chave.
     FILE* file = fopen(key_file, "r");
@@ -45,17 +48,17 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         char* str = NULL;
         int num_keywords = 0;
 
-        // conta o número de palavras-chave para calcular um valor de TABLE_SIZE.
+        // conta o número de palavras-chave para calcular um valor de tableSize.
         while (fgets(str, 17, file) != NULL)
             num_keywords++;
 
         fclose(file);
 
-        // calcula, a partir do nº de palavras-chave, um valor de TABLE_SIZE 40% maior.
-        (*idx)->TABLE_SIZE = num_keywords * 1.4;
-        (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->TABLE_SIZE);
+        // calcula, a partir do nº de palavras-chave, um valor de tableSize 40% maior.
+        (*idx)->tableSize = num_keywords * 1.4;
+        (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->tableSize);
 
-        for (int i = 0; i < (*idx)->TABLE_SIZE; i++)
+        for (int i = 0; i < (*idx)->tableSize; i++)
             (*idx)->hash_table[i] = NULL;
 
         // lê novamente o arquivo 'keys_file.txt', desta vez para armazenar as chaves no índice.
@@ -63,21 +66,29 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         while (fgets(str, 17, file) != NULL)
         {
             // calcula a chave a partir da palavra-chave fornecida.
-            int hash_idx = hash_function(str, (*idx)->TABLE_SIZE);
-            Registry* reg_prev = (*idx)->hash_table[hash_idx];
-            Registry* reg_next = (*idx)->hash_table[hash_idx];
-            bool found = false;
+            int hash_idx = hash_function(str, (*idx)->tableSize);
 
-            // verifica se o slot correspondente à hash_key está vazio.
-//            while (reg->next != NULL)
-//            {
-//                // a palavra-chave já existe.
-//                if (!strcmp(reg->keyword, str))
-//                {
-//                    found = true;
-//                    break;
-//                }
-//            }
+            Registry* reg = (Registry*)malloc(sizeof(Registry));
+            reg->keyword = str;
+            reg->numOccurrences = 0;
+            reg->line_occurrence = NULL;
+            reg->next = NULL;
+
+            // se a posição inicialmente representada por hash_idx estiver vazia, o novo nó é atribuído a ela.
+            if ((*idx)->hash_table[hash_idx] == NULL)
+                (*idx)->hash_table[hash_idx] = reg;
+
+            else
+            {
+                Registry* aux = (*idx)->hash_table[hash_idx];
+                while (aux->next != NULL)
+                {
+                    if (strcmp(aux->keyword, str) == 0) break; // evita inserções repetidas de uma mesma keyword.
+                    aux = aux->next;
+                }
+                // liga o novo registro à coleção com o mesmo código hash.
+                aux->next = reg;
+            }
         }
     }
     else
