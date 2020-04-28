@@ -2,6 +2,8 @@
 // Created by gabri on 24/04/2020.
 //
 
+#define BUFF_SIZE 17
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,7 +21,6 @@ typedef struct registry
 
 struct index
 {
-    int tableSize;
     int numKeywords;
     Registry** hash_table;
 };
@@ -45,28 +46,30 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
     FILE* file = fopen(key_file, "r");
     if (file != NULL)
     {
-        char* str = NULL;
-        int num_keywords = 0;
+        char str[BUFF_SIZE] = "";
 
         // conta o número de palavras-chave para calcular um valor de tableSize.
-        while (fgets(str, 17, file) != NULL)
-            num_keywords++;
+        while (fgets(str, BUFF_SIZE, file) != NULL)
+            (*idx)->numKeywords++;
 
         fclose(file);
 
-        // calcula, a partir do nº de palavras-chave, um valor de tableSize 40% maior.
-        (*idx)->tableSize = num_keywords * 1.4;
-        (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->tableSize);
+        (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->numKeywords);
 
-        for (int i = 0; i < (*idx)->tableSize; i++)
+        for (int i = 0; i < (*idx)->numKeywords; i++)
             (*idx)->hash_table[i] = NULL;
 
         // lê novamente o arquivo 'keys_file.txt', desta vez para armazenar as chaves no índice.
         file = fopen(key_file, "r");
-        while (fgets(str, 17, file) != NULL)
+        rewind(file);
+
+        while (fgets(str, BUFF_SIZE, file) != NULL)
         {
+            char* pos = strchr(str, '\n');
+            if (pos != NULL) *pos = '\0';
+
             // calcula a chave a partir da palavra-chave fornecida.
-            int hash_idx = hash_function(str, (*idx)->tableSize);
+            int hash_idx = hash_function(str, (*idx)->numKeywords);
 
             Registry* reg = (Registry*)malloc(sizeof(Registry));
             reg->keyword = str;
@@ -96,7 +99,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         fprintf(stderr, "\nFile %s not found.", key_file);
         return 1;
     }
-
+    printf("%d\n", (*idx)->numKeywords);
     return 0;
 }
 int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocurrences)
