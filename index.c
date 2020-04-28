@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <stdbool.h>
 #include "index.h"
 
@@ -27,11 +26,10 @@ struct index
 
 static int hash_function(char* key, int TABLE_SIZE)
 {
-    srand(time(NULL));
     int sum = 0, len = strlen(key);
 
     for (int i = 0; i < len; i++)
-        sum += (int)key[i] * (rand() % len-1);
+        sum += (int)key[i];
 
     return sum % TABLE_SIZE;
 }
