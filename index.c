@@ -12,7 +12,7 @@
 
 typedef struct registry
 {
-    char* keyword;
+    char keyword[BUFF_SIZE];
     int numOccurrences;
     int* line_occurrence;
     struct registry* next;
@@ -44,7 +44,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
     FILE* file = fopen(key_file, "r");
     if (file != NULL)
     {
-        char str[BUFF_SIZE] = "";
+        char str[BUFF_SIZE] = "\0";
 
         // conta o número de palavras-chave para calcular um valor de tableSize.
         while (fgets(str, BUFF_SIZE, file) != NULL)
@@ -63,6 +63,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 
         while (fgets(str, BUFF_SIZE, file) != NULL)
         {
+            // remove o '\n' da string.
             char* pos = strchr(str, '\n');
             if (pos != NULL) *pos = '\0';
 
@@ -70,7 +71,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
             int hash_idx = hash_function(str, (*idx)->numKeywords);
 
             Registry* reg = (Registry*)malloc(sizeof(Registry));
-            reg->keyword = str;
+            strcpy(reg->keyword, str);
             reg->numOccurrences = 0;
             reg->line_occurrence = NULL;
             reg->next = NULL;
@@ -97,6 +98,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         fprintf(stderr, "\nFile %s not found.", key_file);
         return 1;
     }
+    Registry* reg = (*idx)->hash_table[hash_function("be", (*idx)->numKeywords)];
     printf("%d\n", (*idx)->numKeywords);
     return 0;
 }
