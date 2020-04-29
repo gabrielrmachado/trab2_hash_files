@@ -21,6 +21,7 @@ typedef struct registry
 struct index
 {
     int numKeywords;
+    char* keywords[BUFF_SIZE];
     Registry** hash_table;
 };
 
@@ -60,12 +61,16 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         // lê novamente o arquivo 'keys_file.txt', desta vez para armazenar as chaves no índice.
         file = fopen(key_file, "r");
         rewind(file);
+        int i = 0;
 
         while (fgets(str, BUFF_SIZE, file) != NULL)
         {
             // remove o '\n' da string.
             char* pos = strchr(str, '\n');
             if (pos != NULL) *pos = '\0';
+
+            (*idx)->keywords[i] = malloc(strlen(str) + 1);
+            strcpy((*idx)->keywords[i], str); i++;
 
             // calcula a chave a partir da palavra-chave fornecida.
             int hash_idx = hash_function(str, (*idx)->numKeywords);
@@ -92,14 +97,30 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
                 aux->next = reg;
             }
         }
+        fclose(file);
     }
     else
     {
         fprintf(stderr, "\nFile %s not found.", key_file);
         return 1;
     }
-    Registry* reg = (*idx)->hash_table[hash_function("be", (*idx)->numKeywords)];
-    printf("%d\n", (*idx)->numKeywords);
+
+    for (int i = 0; i < (*idx)->numKeywords; i++)
+        printf("%s\n", (*idx)->keywords[i]);
+
+    // com as keywords inseridas, agora é hora de ler o texto. (strtok)
+    file = fopen(text_file, "r");
+
+    if (file != NULL)
+    {
+
+    }
+    else
+    {
+        fprintf(stderr, "\nFile %s not found.", text_file);
+        return 1;
+    }
+
     return 0;
 }
 int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocurrences)
