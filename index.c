@@ -3,10 +3,12 @@
 //
 
 #define BUFF_SIZE 17
+#define TEXT_BUFF_SIZE 8096
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include "index.h"
 
@@ -105,15 +107,32 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         return 1;
     }
 
-    for (int i = 0; i < (*idx)->numKeywords; i++)
-        printf("%s\n", (*idx)->keywords[i]);
-
-    // com as keywords inseridas, agora é hora de ler o texto. (strtok)
+    // com as keywords inseridas, agora é hora de ler o texto contido em 'text_file.txt'.
     file = fopen(text_file, "r");
-
     if (file != NULL)
     {
+        char str[TEXT_BUFF_SIZE] = "\0";
+        while (fgets(str, TEXT_BUFF_SIZE, file) != NULL)
+        {
+            // separa as palavras da frase capturada.
+            int i = 0;
+            while (i < strlen(str))
+            {
+                char word[BUFF_SIZE] = "\0";
+                int j = 0;
 
+                // verifica se o caractere atual é uma letra. Se não for, o mesmo é ignorado.
+                if (!isalpha(str[i])) i++;
+
+                // Se for, executa um loop para capturar as demais letras que formam a palavra.
+                // Esse loop é executado até que um caractere não alfabético surja.
+                else while (isalpha(str[i]) && i < strlen(str) && j < BUFF_SIZE-1)
+                {
+                    word[j] = str[i];
+                    i++; j++;
+                }
+            }
+        }
     }
     else
     {
