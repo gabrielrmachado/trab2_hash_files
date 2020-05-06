@@ -126,10 +126,14 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 
                 // Se for, executa um loop para capturar as demais letras que formam a palavra.
                 // Esse loop é executado até que um caractere não alfabético surja.
-                else while (isalpha(str[i]) && i < strlen(str) && j < BUFF_SIZE-1)
+                else
                 {
-                    word[j] = str[i];
-                    i++; j++;
+                    while (isalpha(str[i]) && i < strlen(str) && j < BUFF_SIZE-1)
+                    {
+                        word[j] = str[i];
+                        i++; j++;
+                    }
+                    printf("%s\n", word);
                 }
             }
         }
