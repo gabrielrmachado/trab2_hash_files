@@ -7,6 +7,7 @@ int main(int argc, char** argv)
     argv[1] = "keys_file.txt";
     argv[2] = "text_file.txt";
     index_createfrom(argv[1], argv[2], &idx);
+    index_print(idx);
 
     return 0;
 }
