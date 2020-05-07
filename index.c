@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include "index.h"
 
 typedef struct registry
@@ -16,7 +17,7 @@ typedef struct registry
     char keyword[BUFF_SIZE];
     int numOccurrences;
     int* line_occurrence;
-    struct registry* next;
+    struct registry* next; // Tratamento de colisões: encadeamento separado (separate chaining).
 } Registry;
 
 struct index
@@ -187,7 +188,26 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 }
 int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocurrences)
 {
-    return 0;
+    int hash = hash_function(key, idx->numKeywords);
+    bool found = false;
+
+    Registry* reg = idx->hash_table[hash];
+
+    while (strcmp(reg->keyword, key) != 0 && reg != NULL)
+        reg = reg->next;
+
+    if (reg == NULL) return 1;
+    else
+    {
+        *num_ocurrences = reg->numOccurrences;
+        *occurrences = (int*)malloc(sizeof(int) * (*num_ocurrences));
+
+        // copia o vetor de ocorrência contido no índice para o parâmetro 'occurrences'.
+        for (int i = 0; i < (*num_ocurrences); i++)
+            (*occurrences)[i] = reg->line_occurrence[i];
+
+        return 0;
+    }
 }
 int index_put(const Index* idx, const char* key)
 {
@@ -198,19 +218,19 @@ int index_print(const Index* idx)
     // coloca o vetor contendo as palavras-chave em ordem alfabética.
     qsort(idx->keywords, idx->numKeywords, sizeof(const char*), compare);
 
+    // a partir do vetor de keywords ordenado, são feitas as consultas na tabela hash.
     for (int i = 0; i < idx->numKeywords; i++)
     {
-        printf("%s: ", idx->keywords[i]);
+        char keyword[BUFF_SIZE]; strcpy(keyword, idx->keywords[i]);
+        int* occurrences; int num_occurrences;
+        printf("%s: ", keyword);
 
-        int h_idx = hash_function(idx->keywords[i], idx->numKeywords);
-        Registry* reg = idx->hash_table[h_idx];
+        index_get(idx, keyword, &occurrences, &num_occurrences);
 
-        while (strcmp(reg->keyword, idx->keywords[i]) != 0)
-            reg = reg->next;
+        for (int j = 0; j < num_occurrences-1; j++)
+            printf("%d, ", occurrences[j]);
 
-        for (int j = 0; j < reg->numOccurrences-1; j++)
-            printf("%d, ", reg->line_occurrence[j]);
-        printf("%d\n", reg->line_occurrence[reg->numOccurrences-1]);
+        printf("%d\n", occurrences[num_occurrences-1]);
 
     }
     return 0;
