@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdbool.h>
 #include "index.h"
 
 typedef struct registry
@@ -27,6 +26,11 @@ struct index
     char* keywords[BUFF_SIZE];
     Registry** hash_table;
 };
+
+static int compare(const void* a, const void* b)
+{
+    return strcmp(*(const char**)a, *(const char**)b);
+}
 
 static int hash_function(char* key, int TABLE_SIZE)
 {
@@ -191,6 +195,9 @@ int index_put(const Index* idx, const char* key)
 }
 int index_print(const Index* idx)
 {
+    // coloca o vetor contendo as palavras-chave em ordem alfabética.
+    qsort(idx->keywords, idx->numKeywords, sizeof(const char*), compare);
+
     for (int i = 0; i < idx->numKeywords; i++)
     {
         printf("%s: ", idx->keywords[i]);
