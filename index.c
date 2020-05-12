@@ -83,17 +83,19 @@ static int compare_int(const void* a, const void* b)
     return (*(int*)a - *(int*)b);
 }
 
-static void get_array_keywords(Index* idx, char** keywords[BUFF_SIZE])
+static void get_array_keywords(Index* idx, char*** keywords)
 {
     Keyword* kw = idx->keywords;
+    *keywords = (char**)malloc(idx->numKeywords * sizeof(char*));
+
     for (int i = 0; i < idx->numKeywords; i++)
     {
-        strcpy(keywords[i], kw->keyword);
+        (*keywords)[i] = malloc((BUFF_SIZE) * sizeof(char));
+        strcpy((*keywords)[i], kw->keyword);
         kw = kw->next;
     }
-
     // coloca o vetor contendo as palavras-chave em ordem alfabética.
-    qsort(idx->keywords, idx->numKeywords, sizeof(const char*), compare);
+    qsort(*keywords, idx->numKeywords, sizeof(const char*), compare);
 }
 
 
@@ -149,8 +151,8 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         for (int i = 0; i < (*idx)->numKeywords; i++)
             (*idx)->hash_table[i] = NULL;
 
-        char keywords[(*idx)->numKeywords][BUFF_SIZE];
-        get_array_keywords(idx, keywords);
+        char** keywords;
+        get_array_keywords(*idx, &keywords);
 
         for (int i = 0; i < (*idx)->numKeywords; i++)
         {
@@ -247,9 +249,9 @@ int index_put(const Index* idx, const char* key)
             while (i < strlen(str))
             {
                 char word[BUFF_SIZE] = "\0"; int j = 0;
-                if (isspace(str[i])) { i++; continue; }
+                if (!isalpha(str[i])) { i++; continue; }
 
-                while (!isspace(str[i]))
+                while (isalpha(str[i]))
                     word[j++] = str[i++];
 
                 if (strcmp(word, key) == 0) // encontrou keyword no texto.
@@ -320,7 +322,7 @@ int index_put(const Index* idx, const char* key)
 
 int index_print(const Index* idx)
 {
-    char* keywords[idx->numKeywords][BUFF_SIZE];
+    char** keywords;
     get_array_keywords(idx, &keywords);
 
     // a partir do vetor de keywords ordenado, são feitas as consultas na tabela hash.
