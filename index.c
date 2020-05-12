@@ -28,6 +28,7 @@ typedef struct keyword
 struct index
 {
     int numKeywords;
+    int size;
     int numLinesTextFile;
     char* textFile;
     Keyword* keywords;
@@ -98,14 +99,15 @@ static void get_array_keywords(Index* idx, char*** keywords)
     qsort(*keywords, idx->numKeywords, sizeof(const char*), compare);
 }
 
-
-static int hash_function(const char* key, int TABLE_SIZE)
+static int hash_function(Index* idx, const char* key)
 {
     int sum = 0, len = strlen(key);
     for (int i = 0; i < len; i++)
         sum += (int)key[i];
 
-    return sum % TABLE_SIZE;
+    int hash = sum % idx->size;
+    if (hash >= idx->size) return hash -= idx->size;
+    return hash;
 }
 
 int index_createfrom(const char* key_file, const char* text_file, Index** idx)
@@ -146,7 +148,8 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         }
 
         fclose(file);
-        (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->numKeywords);
+        (*idx)->size = (*idx)->numKeywords;
+        (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->size);
 
         for (int i = 0; i < (*idx)->numKeywords; i++)
             (*idx)->hash_table[i] = NULL;
@@ -159,7 +162,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
             char str[BUFF_SIZE]; strcpy(str, keywords[i]);
 
             // calcula a chave a partir da palavra-chave fornecida.
-            int hash_idx = hash_function(str, (*idx)->numKeywords);
+            int hash_idx = hash_function(*idx, str);
 
             Registry* reg = (Registry*)malloc(sizeof(Registry));
             strcpy(reg->keyword, str);
@@ -203,7 +206,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 }
 int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocurrences)
 {
-    int hash = hash_function(key, idx->numKeywords);
+    int hash = hash_function(idx, key);
     Registry* reg = idx->hash_table[hash];
 
     while (reg != NULL && strcmp(reg->keyword, key) != 0)
@@ -268,7 +271,7 @@ int index_put(const Index* idx, const char* key)
         if (num_occurrences > 0)
         {
             // procura a keyword no índice remissivo.
-            int hash = hash_function(key, idx->numKeywords);
+            int hash = hash_function(idx, key);
             Registry* reg = idx->hash_table[hash];
             Registry* antReg = reg;
 
@@ -283,6 +286,8 @@ int index_put(const Index* idx, const char* key)
                 Registry* newReg = (Registry *) malloc(sizeof(Registry));
                 strcpy(newReg->keyword, key);
                 newReg->numOccurrences = num_occurrences;
+                newReg->line_occurrence = (int*)malloc(sizeof(int) * idx->numLinesTextFile);
+                memset(newReg->line_occurrence, 0, sizeof(int));
 
                 for (int i = 0; i < idx->numLinesTextFile; i++)
                     newReg->line_occurrence[i] = occurrences[i];
@@ -298,7 +303,7 @@ int index_put(const Index* idx, const char* key)
                 }
 
                 // atualiza o vetor de keywords.
-                insert_keyword(idx, key);
+                insert_keyword(&idx, key);
             }
             else
             {
