@@ -10,6 +10,12 @@ int main(int argc, char** argv)
     index_print(idx);
     index_put(idx, "read"); printf("\n");
     index_print(idx);
+    index_put(idx, "the"); printf("\n");
+    index_print(idx);
+    index_put(idx, "of"); printf("\n");
+    index_print(idx);
+    index_put(idx, "programming"); printf("\n");
+    index_print(idx);
 
     return 0;
 }
