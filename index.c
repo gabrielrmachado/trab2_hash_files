@@ -37,31 +37,39 @@ struct index
 static short insert_keyword(Index** idx, const char* keyword)
 {
     short found = 0;
-    Keyword** kw = (&(*idx)->keywords);
-
-    for (int i = 0; i < (*idx)->numKeywords; i++)
+    if ((*idx)->keywords == NULL)
     {
-        if (strcmp((*kw)->keyword, keyword) == 0)
-        {
-            found = 1; break;
-        }
-        else *kw = (*kw)->next;
-    }
-
-    if (found == 0)
-    {
-        Keyword* new_kw = (Keyword*)malloc(sizeof(Keyword));
-        strcpy(new_kw->keyword, keyword);
-
-        if ((*idx)->numKeywords == 0)
-            *kw = new_kw;
-        else
-            (*kw)->next = new_kw;
-
-        new_kw->next = NULL;
+        Keyword* newKw = (Keyword*)malloc(sizeof(Keyword));
+        strcpy(newKw->keyword, keyword);
+        newKw->next = NULL;
+        (*idx)->keywords = newKw;
         (*idx)->numKeywords++;
     }
+    else
+    {
+        Keyword* kw = (*idx)->keywords;
+        Keyword* prevKw = NULL;
 
+        while (kw != NULL)
+        {
+            if (strcmp(kw->keyword, keyword) == 0)
+            {
+                found = 1;
+                break;
+            }
+            prevKw = kw;
+            kw = kw->next;
+        }
+
+        if (!found)
+        {
+            Keyword* newKw = (Keyword*)malloc(sizeof(Keyword));
+            strcpy(newKw->keyword, keyword);
+            prevKw->next = newKw;
+            newKw->next = kw;
+            (*idx)->numKeywords++;
+        }
+    }
     return found;
 }
 
@@ -140,7 +148,6 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 
         for (int i = 0; i < (*idx)->numKeywords; i++)
             (*idx)->hash_table[i] = NULL;
-
 
         char keywords[(*idx)->numKeywords][BUFF_SIZE];
         get_array_keywords(idx, keywords);
