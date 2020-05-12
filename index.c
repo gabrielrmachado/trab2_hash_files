@@ -106,7 +106,8 @@ static int hash_function(Index* idx, const char* key)
         sum += (int)key[i];
 
     int hash = sum % idx->size;
-    if (hash >= idx->size) return hash -= idx->size;
+    if (hash >= idx->size)
+        return hash -= idx->size;
     return hash;
 }
 
@@ -148,10 +149,10 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         }
 
         fclose(file);
-        (*idx)->size = (*idx)->numKeywords;
+        (*idx)->size = (*idx)->numKeywords * 1.5;
         (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->size);
 
-        for (int i = 0; i < (*idx)->numKeywords; i++)
+        for (int i = 0; i < (*idx)->size; i++)
             (*idx)->hash_table[i] = NULL;
 
         char** keywords;
@@ -296,11 +297,8 @@ int index_put(const Index* idx, const char* key)
                 if (antReg == NULL)
                     idx->hash_table[hash] = newReg;
 
-                else
-                {
-                    antReg->next = newReg;
-                    newReg->next = NULL;
-                }
+                else antReg->next = newReg;
+                newReg->next = NULL;
 
                 // atualiza o vetor de keywords.
                 insert_keyword(&idx, key);
