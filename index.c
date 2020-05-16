@@ -27,8 +27,8 @@ typedef struct keyword
 
 struct index
 {
-    int numKeywords;
     int size;
+    int numKeywords;
     int numLinesTextFile;
     char* textFile;
     Keyword* keywords;
@@ -284,7 +284,7 @@ int index_put(const Index* idx, const char* key)
 
             if (reg == NULL) // não encontrou a keyword.
             {
-                Registry* newReg = (Registry *) malloc(sizeof(Registry));
+                Registry* newReg = (Registry*) malloc(sizeof(Registry));
                 strcpy(newReg->keyword, key);
                 newReg->numOccurrences = num_occurrences;
                 newReg->line_occurrence = (int*)malloc(sizeof(int) * idx->numLinesTextFile);
