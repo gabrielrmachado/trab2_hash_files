@@ -221,10 +221,11 @@ int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocu
         memset(*occurrences, -1, sizeof(int) * idx->numLinesTextFile);
 
         // copia o vetor de ocorrência contido no índice para o parâmetro 'occurrences'.
+        int j = 0;
         for (int i = 0; i < idx->numLinesTextFile; i++)
         {
-//            printf("GET - occurrences %s: %d\n", key, reg->line_occurrence[i]);
-            (*occurrences)[i] = reg->line_occurrence[i];
+            if (reg->line_occurrence[i] != -1)
+                (*occurrences)[j++] = reg->line_occurrence[i];
         }
 
         return 0;
