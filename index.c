@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include "index.h"
 
 typedef struct registry
@@ -233,7 +234,6 @@ int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocu
 }
 int index_put(const Index* idx, const char* key)
 {
-    // com as keywords inseridas, agora é hora de ler o texto contido em 'text_file.txt'.
     FILE* file = fopen(idx->textFile, "r");
     rewind(file); int ans = -1;
 
@@ -250,22 +250,22 @@ int index_put(const Index* idx, const char* key)
             current_line++;
 
             // separa as palavras da frase capturada.
-            int i = 0;
-            while (i < strlen(str))
+            int i = 0; char* p = strstr(str, key);
+            if (p != NULL) // encontrou keyword no texto.
             {
-                char word[BUFF_SIZE] = "\0"; int j = 0;
-                if (!isalpha(str[i])) { i++; continue; }
+                int pos = (int)(p - str);
+                char s1 = '\0'; char s2 = '\0';
 
-                while (isalpha(str[i]))
-                    word[j++] = str[i++];
+                if (pos-1 >= 0) s1 = str[pos-1];
+                if (pos + strlen(key) <= strlen(str)-1) s2 = str[pos + strlen(key)];
 
-                if (strcmp(word, key) == 0) // encontrou keyword no texto.
+                if (!isalpha(s1) && !isalpha(s2))
                 {
                     num_occurrences++;
 
                     // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
-                    if (occurrences[current_line-1] == -1)
-                        occurrences[current_line-1] = current_line;
+                    if (occurrences[current_line - 1] == -1)
+                        occurrences[current_line - 1] = current_line;
                 }
             }
         }
@@ -349,4 +349,28 @@ int index_print(const Index* idx)
         }
     }
     return 0;
+
+//    while (fgets(str, TEXT_BUFF_SIZE, file) != NULL)
+//    {
+//        current_line++;
+//
+//        // separa as palavras da frase capturada.
+//        int i = 0;
+//        while (i < strlen(str))
+//        {
+//            char word[BUFF_SIZE] = "\0"; int j = 0;
+//            if (!isalpha(str[i])) { i++; continue; }
+//
+//            while (isalpha(str[i]))
+//                word[j++] = str[i++];
+//
+//            if (strcmp(word, key) == 0) // encontrou keyword no texto.
+//            {
+//                num_occurrences++;
+//
+//                // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
+//                if (occurrences[current_line-1] == -1)
+//                    occurrences[current_line-1] = current_line;
+//            }
+//        }
 }
