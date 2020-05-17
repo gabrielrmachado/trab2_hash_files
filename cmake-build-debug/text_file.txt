@@ -4,7 +4,7 @@
      ___ Good     programming          is not albeit learned from
 generalities, but by seeing how significant
 programs can be made clean      ,;;;///??? easy   to
-read, easy to maintain and modify, neural network
+read, easy to maintain and modify  ,    neural network
 human-engineered, efficient, and reliable,
-by the application of common sense and
-by the use of good programming practices.
+by the application of word2vec common sense and
+by the use of good programming practices ##test.
