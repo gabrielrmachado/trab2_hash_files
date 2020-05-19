@@ -1,7 +1,4 @@
-
-     =====--='as-=a-=as-=a====
-
-     ___ Good     programming          is not albeit learned from
+Good     programming          is not albeit learned from
 generalities, but by seeing how significant
 programs can be made clean      ,;;;///??? easy   to
 read, easy to maintain and modify  ,    neural network
