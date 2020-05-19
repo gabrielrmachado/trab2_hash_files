@@ -276,26 +276,6 @@ int index_put(const Index* idx, const char* key)
                         occurrences[current_line - 1] = current_line;
                 }
             }
-//
-//            // separa as palavras da frase capturada.
-//            int i = 0; char* p = strstr(str, key);
-//            if (p != NULL) // encontrou keyword no texto.
-//            {
-//                int pos = (int)(p - str);
-//                char s1 = '\0'; char s2 = '\0';
-//
-//                if (pos-1 >= 0) s1 = str[pos-1];
-//                if (pos + strlen(key) <= strlen(str)-1) s2 = str[pos + strlen(key)];
-//
-//                if (!isalpha(s1) && !isalpha(s2))
-//                {
-//                    num_occurrences++;
-//
-//                    // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
-//                    if (occurrences[current_line - 1] == -1)
-//                        occurrences[current_line - 1] = current_line;
-//                }
-//            }
         }
         while (1);
 
