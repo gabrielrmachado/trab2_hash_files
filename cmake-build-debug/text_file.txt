@@ -1,7 +1,3 @@
-Good     programming          is not albeit learned from
-generalities, but by seeing how significant
-programs can be made clean   by   ,;;;///??? easy   to
-read, easy to maintain and modify  ,    neural network
-human-engineered, efficient, and reliable,
+Good     programming          is not albeit learned from generalities, but by seeing how significant programs can be made by  by clean    ,;;;///??? easy   to read, easy to maintain and modify  ,    neural network human-engineered, efficient, and reliable,
 by the application of word_2vec common sense and
 by the use of good programming practices #test.

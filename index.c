@@ -3,13 +3,10 @@
 //
 
 #define BUFF_SIZE 17
-#define TEXT_BUFF_SIZE 8096
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
-#include <stdbool.h>
 #include "index.h"
 
 typedef struct registry
@@ -117,7 +114,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
     // inicializa o índice remissivo.
     *idx = (Index*)malloc(sizeof(Index));
     (*idx)->numKeywords = 0;
-    (*idx)->numLinesTextFile = 0;
+    (*idx)->numLinesTextFile = 1;
     (*idx)->keywords = NULL;
     (*idx)->textFile = malloc(sizeof(char) * strlen(text_file)); strcpy((*idx)->textFile, text_file);
 
@@ -126,11 +123,14 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 
     if (file != NULL)
     {
-        char str[TEXT_BUFF_SIZE] = "\0";
-        while (fgets(str, TEXT_BUFF_SIZE, file) != NULL)
+        do
         {
-            (*idx)->numLinesTextFile++;
+            if (feof(file)) break;
+
+            int c = fgetc(file);
+            if (c == '\n') (*idx)->numLinesTextFile++;
         }
+        while (1);
     }
     fclose(file);
 
@@ -358,96 +358,4 @@ int index_print(const Index* idx)
         }
     }
     return 0;
-
-//    int index_put(const Index* idx, const char* key)
-//    {
-//        FILE* file = fopen(idx->textFile, "r");
-//        rewind(file); int ans = -1;
-//
-//        if (file != NULL)
-//        {
-//            int current_line = 0;
-//            int num_occurrences = 0;
-//            int* occurrences = (int*)malloc(sizeof(int) * idx->numLinesTextFile);
-//            memset(occurrences, -1, sizeof(int) * idx->numLinesTextFile);
-//
-//            char str[TEXT_BUFF_SIZE] = "\0";
-//            while (fgets(str, TEXT_BUFF_SIZE, file) != NULL)
-//            {
-//                current_line++;
-//
-//                // separa as palavras da frase capturada.
-//                int i = 0; char* p = strstr(str, key);
-//                if (p != NULL) // encontrou keyword no texto.
-//                {
-//                    int pos = (int)(p - str);
-//                    char s1 = '\0'; char s2 = '\0';
-//
-//                    if (pos-1 >= 0) s1 = str[pos-1];
-//                    if (pos + strlen(key) <= strlen(str)-1) s2 = str[pos + strlen(key)];
-//
-//                    if (!isalpha(s1) && !isalpha(s2))
-//                    {
-//                        num_occurrences++;
-//
-//                        // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
-//                        if (occurrences[current_line - 1] == -1)
-//                            occurrences[current_line - 1] = current_line;
-//                    }
-//                }
-//            }
-//
-//            if (num_occurrences > 0)
-//            {
-//                // procura a keyword no índice remissivo.
-//                int hash = hash_function(idx, key);
-//                Registry* reg = idx->hash_table[hash];
-//                Registry* antReg = reg;
-//
-//                while (reg != NULL && strcmp(reg->keyword, key) != 0)
-//                {
-//                    antReg = reg;
-//                    reg = reg->next;
-//                }
-//
-//                if (reg == NULL) // não encontrou a keyword.
-//                {
-//                    Registry* newReg = (Registry*) malloc(sizeof(Registry));
-//                    strcpy(newReg->keyword, key);
-//                    newReg->numOccurrences = num_occurrences;
-//                    newReg->line_occurrence = (int*)malloc(sizeof(int) * idx->numLinesTextFile);
-//                    memset(newReg->line_occurrence, 0, sizeof(int));
-//
-//                    for (int i = 0; i < idx->numLinesTextFile; i++)
-//                        newReg->line_occurrence[i] = occurrences[i];
-//
-//                    // primeiro registro no slot.
-//                    if (antReg == NULL)
-//                        idx->hash_table[hash] = newReg;
-//
-//                    else antReg->next = newReg;
-//                    newReg->next = NULL;
-//
-//                    // atualiza o vetor de keywords.
-//                    insert_keyword(&idx, key);
-//                }
-//                else
-//                {
-//                    reg->numOccurrences = num_occurrences;
-//                    for (int i = 0; i < idx->numLinesTextFile; i++)
-//                        reg->line_occurrence[i] = occurrences[i];
-//                }
-//
-//                free(occurrences);
-//            }
-//            ans = 0;
-//        }
-//        else
-//        {
-//            fprintf(stderr, "\nFile %s not found.", idx->textFile);
-//            ans = 1;
-//        }
-//        fclose(file);
-//        return ans;
-//    }
 }
