@@ -9,11 +9,17 @@
 #include <string.h>
 #include "index.h"
 
+typedef struct occurrence
+{
+    int num_occurrence;
+    int line;
+} Occurrence;
+
 typedef struct registry
 {
     char keyword[BUFF_SIZE];
     int numOccurrences;
-    int* line_occurrence;
+    Occurrence** line_occurrence;
     struct registry* next; // Tratamento de colisões: encadeamento separado (separate chaining).
 } Registry;
 
@@ -75,11 +81,6 @@ static short insert_keyword(Index** idx, const char* keyword)
 static int compare(const void* a, const void* b)
 {
     return strcmp(*(const char**)a, *(const char**)b);
-}
-
-static int compare_int(const void* a, const void* b)
-{
-    return (*(int*)a - *(int*)b);
 }
 
 static void get_array_keywords(Index* idx, char*** keywords)
@@ -150,10 +151,10 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         }
 
         fclose(file);
-        (*idx)->size = (*idx)->numKeywords * 1.5;
+        (*idx)->size = (*idx)->numKeywords * 1.5; // MUDAR ISSO...
         (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->size);
 
-        for (int i = 0; i < (*idx)->size; i++)
+        for (int i = 0; i < (*idx)->size; i++) // TROCAR POR MEMSET...
             (*idx)->hash_table[i] = NULL;
 
         char** keywords;
@@ -169,8 +170,8 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
             Registry* reg = (Registry*)malloc(sizeof(Registry));
             strcpy(reg->keyword, str);
             reg->numOccurrences = 0;
-            reg->line_occurrence = (int*)malloc(sizeof(int) * (*idx)->numLinesTextFile);
-            memset(reg->line_occurrence, 0, sizeof(int));
+            reg->line_occurrence = (Occurrence**)malloc(sizeof(Occurrence*) * (*idx)->numLinesTextFile);
+            memset(reg->line_occurrence, 0, sizeof(Occurrence*) * (*idx)->numLinesTextFile);
             reg->next = NULL;
 
             // se a posição inicialmente representada por hash_idx estiver vazia, o novo nó é atribuído a ela.
@@ -219,17 +220,22 @@ int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocu
     else
     {
         *num_ocurrences = reg->numOccurrences;
-        *occurrences = (int*)malloc(sizeof(int) * idx->numLinesTextFile);
-        memset(*occurrences, -1, sizeof(int) * idx->numLinesTextFile);
+        *occurrences = (int*)malloc(sizeof(int) * reg->numOccurrences);
 
         // copia o vetor de ocorrência contido no índice para o parâmetro 'occurrences'.
-        int j = 0;
-        for (int i = 0; i < idx->numLinesTextFile; i++)
+        int i = 0, j = 0;
+        while (i < idx->numLinesTextFile)
         {
-            if (reg->line_occurrence[i] != -1)
-                (*occurrences)[j++] = reg->line_occurrence[i];
+            Occurrence* occ = reg->line_occurrence[i++]; int k = 0;
+            if (occ != 0)
+            {
+                while (k < occ->num_occurrence)
+                {
+                    (*occurrences)[j++] = occ->line;
+                    k++;
+                }
+            }
         }
-
         return 0;
     }
 }
@@ -242,8 +248,8 @@ int index_put(const Index* idx, const char* key)
     {
         int current_line = 1, i = 0;
         int num_occurrences = 0;
-        int* occurrences = (int*)malloc(sizeof(int) * idx->numLinesTextFile);
-        memset(occurrences, -1, sizeof(int) * idx->numLinesTextFile);
+        Occurrence** occurrences = (Occurrence**)malloc(sizeof(Occurrence*) * idx->numLinesTextFile);
+        memset(occurrences, 0, sizeof(Occurrence*) * idx->numLinesTextFile);
         char word[BUFF_SIZE] = {"\0"};
 
         do
@@ -264,16 +270,27 @@ int index_put(const Index* idx, const char* key)
             }
             else
             {
-                // verifica palavras maiores que 16 caracteres.
+                // verifica palavras maiores que 16 caracteres. (TESTAR ISSO...)
                 if (i >= BUFF_SIZE) continue;
                 word[i++] = c;
 
                 if (strcmp(word, key) == 0)
                 {
                     num_occurrences++;
+                    Occurrence* occ = occurrences[current_line - 1];
+
                     // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
-                    if (occurrences[current_line - 1] == -1)
-                        occurrences[current_line - 1] = current_line;
+                    if (occ == 0)
+                    {
+                        occ = (Occurrence*)malloc(sizeof(Occurrence));
+                        occ->num_occurrence = 1;
+                        occ->line = current_line;
+                        occurrences[current_line - 1] = occ;
+                    }
+                    else
+                    {
+                        occ->num_occurrence++;
+                    }
                 }
             }
         }
@@ -297,8 +314,8 @@ int index_put(const Index* idx, const char* key)
                 Registry* newReg = (Registry*) malloc(sizeof(Registry));
                 strcpy(newReg->keyword, key);
                 newReg->numOccurrences = num_occurrences;
-                newReg->line_occurrence = (int*)malloc(sizeof(int) * idx->numLinesTextFile);
-                memset(newReg->line_occurrence, 0, sizeof(int));
+                newReg->line_occurrence = (Occurrence**)malloc(sizeof(Occurrence*) * idx->numLinesTextFile);
+                memset(newReg->line_occurrence, 0, sizeof(Occurrence*) * idx->numLinesTextFile);
 
                 for (int i = 0; i < idx->numLinesTextFile; i++)
                     newReg->line_occurrence[i] = occurrences[i];
@@ -346,15 +363,11 @@ int index_print(const Index* idx)
         printf("%s: ", keyword);
 
         index_get(idx, keyword, &occurrences, &num_occurrences);
-        qsort(occurrences, idx->numLinesTextFile, sizeof(int), compare_int);
 
-        for (int j = 0; j < idx->numLinesTextFile; j++)
+        for (int j = 0; j < num_occurrences; j++)
         {
-            if (occurrences[j] != -1)
-            {
-                if (j < idx->numLinesTextFile-1) printf("%d, ", occurrences[j]);
-                else printf("%d\n", occurrences[j]);
-            }
+            if (j < num_occurrences-1) printf("%d, ", occurrences[j]);
+            else printf("%d\n", occurrences[j]);
         }
     }
     return 0;
