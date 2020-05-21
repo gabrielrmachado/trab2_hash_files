@@ -360,14 +360,17 @@ int index_print(const Index* idx)
     {
         char keyword[BUFF_SIZE]; strcpy(keyword, keywords[i]);
         int* occurrences; int num_occurrences;
-        printf("%s: ", keyword);
 
         index_get(idx, keyword, &occurrences, &num_occurrences);
 
-        for (int j = 0; j < num_occurrences; j++)
+        if (num_occurrences > 0)
         {
-            if (j < num_occurrences-1) printf("%d, ", occurrences[j]);
-            else printf("%d\n", occurrences[j]);
+            printf("%s: ", keyword);
+            for (int j = 0; j < num_occurrences; j++)
+            {
+                if (j < num_occurrences-1) printf("%d, ", occurrences[j]);
+                else printf("%d\n", occurrences[j]);
+            }
         }
     }
     return 0;

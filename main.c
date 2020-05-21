@@ -72,7 +72,7 @@ int program2(int argc, char** argv)
         return 1;
     }
 
-    printf("Full index updated:\n");
+    printf("Fulled-updated index:\n");
     if (index_print(idx))
     {
         fprintf(stderr, "Error when printing new index.\n");
