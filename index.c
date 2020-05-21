@@ -104,10 +104,7 @@ static int hash_function(Index* idx, const char* key)
     for (int i = 0; i < len; i++)
         sum += (int)key[i];
 
-    int hash = sum % idx->size;
-    if (hash >= idx->size)
-        return hash -= idx->size;
-    return hash;
+    return sum % idx->size;
 }
 
 int index_createfrom(const char* key_file, const char* text_file, Index** idx)
@@ -153,43 +150,41 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         fclose(file);
         (*idx)->size = (*idx)->numKeywords * 1.5; // MUDAR ISSO...
         (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->size);
-
-        for (int i = 0; i < (*idx)->size; i++) // TROCAR POR MEMSET...
-            (*idx)->hash_table[i] = NULL;
+        memset((*idx)->hash_table, 0, sizeof(Registry*) * (*idx)->size);
 
         char** keywords;
         get_array_keywords(*idx, &keywords);
 
-        for (int i = 0; i < (*idx)->numKeywords; i++)
-        {
-            char str[BUFF_SIZE]; strcpy(str, keywords[i]);
-
-            // calcula a chave a partir da palavra-chave fornecida.
-            int hash_idx = hash_function(*idx, str);
-
-            Registry* reg = (Registry*)malloc(sizeof(Registry));
-            strcpy(reg->keyword, str);
-            reg->numOccurrences = 0;
-            reg->line_occurrence = (Occurrence**)malloc(sizeof(Occurrence*) * (*idx)->numLinesTextFile);
-            memset(reg->line_occurrence, 0, sizeof(Occurrence*) * (*idx)->numLinesTextFile);
-            reg->next = NULL;
-
-            // se a posição inicialmente representada por hash_idx estiver vazia, o novo nó é atribuído a ela.
-            if ((*idx)->hash_table[hash_idx] == NULL)
-                (*idx)->hash_table[hash_idx] = reg;
-
-            else
-            {
-                Registry* aux = (*idx)->hash_table[hash_idx];
-                while (aux->next != NULL)
-                {
-                    if (strcmp(aux->keyword, str) == 0) break; // evita inserções repetidas de uma mesma keyword.
-                    aux = aux->next;
-                }
-                // liga o novo registro à coleção com o mesmo código hash.
-                aux->next = reg;
-            }
-        }
+//        for (int i = 0; i < (*idx)->numKeywords; i++)
+//        {
+//            char str[BUFF_SIZE]; strcpy(str, keywords[i]);
+//
+//            // calcula a chave a partir da palavra-chave fornecida.
+//            int hash_idx = hash_function(*idx, str);
+//
+//            Registry* reg = (Registry*)malloc(sizeof(Registry));
+//            strcpy(reg->keyword, str);
+//            reg->numOccurrences = 0;
+//            reg->line_occurrence = (Occurrence**)malloc(sizeof(Occurrence*) * (*idx)->numLinesTextFile);
+//            memset(reg->line_occurrence, 0, sizeof(Occurrence*) * (*idx)->numLinesTextFile);
+//            reg->next = NULL;
+//
+//            // se a posição inicialmente representada por hash_idx estiver vazia, o novo nó é atribuído a ela.
+//            if ((*idx)->hash_table[hash_idx] == NULL)
+//                (*idx)->hash_table[hash_idx] = reg;
+//
+//            else
+//            {
+//                Registry* aux = (*idx)->hash_table[hash_idx];
+//                while (aux->next != NULL)
+//                {
+//                    if (strcmp(aux->keyword, str) == 0) break; // evita inserções repetidas de uma mesma keyword.
+//                    aux = aux->next;
+//                }
+//                // liga o novo registro à coleção com o mesmo código hash.
+//                aux->next = reg;
+//            }
+//        }
         fclose(file);
     }
     else
@@ -316,6 +311,7 @@ int index_put(const Index* idx, const char* key)
                 newReg->numOccurrences = num_occurrences;
                 newReg->line_occurrence = (Occurrence**)malloc(sizeof(Occurrence*) * idx->numLinesTextFile);
                 memset(newReg->line_occurrence, 0, sizeof(Occurrence*) * idx->numLinesTextFile);
+                newReg->next = NULL;
 
                 for (int i = 0; i < idx->numLinesTextFile; i++)
                     newReg->line_occurrence[i] = occurrences[i];
@@ -338,6 +334,39 @@ int index_put(const Index* idx, const char* key)
             }
 
             free(occurrences);
+        }
+        else
+        {
+            // procura a keyword no índice remissivo.
+            int hash = hash_function(idx, key);
+            Registry* reg = idx->hash_table[hash];
+            Registry* antReg = reg;
+
+            while (reg != NULL && strcmp(reg->keyword, key) != 0)
+            {
+                antReg = reg;
+                reg = reg->next;
+            }
+
+            if (reg != NULL)
+            {
+                reg->numOccurrences = 0;
+                memset(reg->line_occurrence, 0, sizeof(Occurrence*) * idx->numLinesTextFile);
+            }
+            else
+            {
+                Registry* newReg = (Registry*)malloc(sizeof(Registry));
+                strcpy(newReg->keyword, key);
+                newReg->numOccurrences = 0;
+                newReg->line_occurrence = (Occurrence**)malloc(sizeof(Occurrence*) * idx->numLinesTextFile);
+                memset(newReg->line_occurrence, 0, sizeof(Occurrence*) * idx->numLinesTextFile);
+                newReg->next = NULL;
+
+                if (antReg == NULL)
+                    idx->hash_table[hash] = newReg;
+
+                else antReg->next = newReg;
+            }
         }
         ans = 0;
     }
