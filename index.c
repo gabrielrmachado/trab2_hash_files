@@ -1,15 +1,12 @@
-//
-// Created by gabri on 24/04/2020.
-//
-
 #define BUFF_SIZE 17
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include "index.h"
 
-typedef struct occurrence
+typedef struct occurrence // struct para armazenar a qtde de repetições de uma keyword em uma mesma linha de texto.
 {
     int num_occurrence;
     int line;
@@ -23,7 +20,7 @@ typedef struct registry
     struct registry* next; // Tratamento de colisões: encadeamento separado (separate chaining).
 } Registry;
 
-typedef struct keyword
+typedef struct keyword // estrutura dos nós pertencentes à lista encadeada de keywords.
 {
     char keyword[BUFF_SIZE];
     struct keyword* next;
@@ -31,15 +28,16 @@ typedef struct keyword
 
 struct index
 {
-    int size;
-    int numKeywords;
-    int numLinesTextFile;
-    char* textFile;
-    Keyword* keywords;
-    Registry** hash_table;
+    int size; // armazena o tamanho da tabela hash, i.e., o número de slots máximo do array.
+    int numKeywords; // armazena o número de keywords.
+    int numLinesTextFile; // armazena o número de linhas do arquivo de texto.
+    char* textFile; // armazena a path string do arquivo de texto.
+    Keyword* keywords; // lista encadeada em tempo de execução. Útil para realizar o sorting mais rapidamente.
+    Registry** hash_table; // a tabela hash.
 };
 
 static short insert_keyword(Index** idx, const char* keyword)
+// insere, em tempo de execução, uma nova keyword na lista encadeada '(*idx)->keywords'.
 {
     short found = 0;
     if ((*idx)->keywords == NULL)
@@ -78,12 +76,42 @@ static short insert_keyword(Index** idx, const char* keyword)
     return found;
 }
 
+static short isPrime(int N)
+{
+    if (N % 2 == 0) return 0;
+    else
+    {
+        int half = N / 2, i = 2;
+        while (i < half)
+        {
+            if (N % i == 0) return 0;
+            i++;
+        }
+        return 1;
+    }
+}
+
+static int compute_size_array(const int numKeywords)
+// calcula um número para o tamanho para a tabela hash que seja primo, de modo a tornar as colisões menos frequentes.
+{
+    int pSize = 0;
+
+    if (numKeywords <= 20) pSize = numKeywords * 2;
+    else pSize = numKeywords * 1.4;
+
+    while (!isPrime(pSize))
+        pSize++;
+
+    return pSize;
+}
+
 static int compare(const void* a, const void* b)
 {
     return strcmp(*(const char**)a, *(const char**)b);
 }
 
 static void get_array_keywords(Index* idx, char*** keywords)
+// retorna no array 'keywords' todas as keywords, armazenadas na lista encadeada, em ordem lexicográfica.
 {
     Keyword* kw = idx->keywords;
     *keywords = (char**)malloc(idx->numKeywords * sizeof(char*));
@@ -99,6 +127,7 @@ static void get_array_keywords(Index* idx, char*** keywords)
 }
 
 static int hash_function(Index* idx, const char* key)
+// a função hash que calcula o índice baseado no método da divisão.
 {
     int sum = 0, len = strlen(key);
     for (int i = 0; i < len; i++)
@@ -138,7 +167,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
     {
         char str[BUFF_SIZE] = "\0";
 
-        // conta o número de palavras-chave para calcular um valor de tableSize.
+        // conta o número de palavras-chave para calcular um tamanho para a tabela hash.
         while (fgets(str, BUFF_SIZE, file) != NULL)
         {
             // remove o '\n' da string.
@@ -148,43 +177,12 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         }
 
         fclose(file);
-        (*idx)->size = (*idx)->numKeywords * 1.5; // MUDAR ISSO...
+        (*idx)->size = compute_size_array((*idx)->numKeywords);
         (*idx)->hash_table = (Registry**)malloc(sizeof(Registry*) * (*idx)->size);
         memset((*idx)->hash_table, 0, sizeof(Registry*) * (*idx)->size);
 
         char** keywords;
         get_array_keywords(*idx, &keywords);
-
-//        for (int i = 0; i < (*idx)->numKeywords; i++)
-//        {
-//            char str[BUFF_SIZE]; strcpy(str, keywords[i]);
-//
-//            // calcula a chave a partir da palavra-chave fornecida.
-//            int hash_idx = hash_function(*idx, str);
-//
-//            Registry* reg = (Registry*)malloc(sizeof(Registry));
-//            strcpy(reg->keyword, str);
-//            reg->numOccurrences = 0;
-//            reg->line_occurrence = (Occurrence**)malloc(sizeof(Occurrence*) * (*idx)->numLinesTextFile);
-//            memset(reg->line_occurrence, 0, sizeof(Occurrence*) * (*idx)->numLinesTextFile);
-//            reg->next = NULL;
-//
-//            // se a posição inicialmente representada por hash_idx estiver vazia, o novo nó é atribuído a ela.
-//            if ((*idx)->hash_table[hash_idx] == NULL)
-//                (*idx)->hash_table[hash_idx] = reg;
-//
-//            else
-//            {
-//                Registry* aux = (*idx)->hash_table[hash_idx];
-//                while (aux->next != NULL)
-//                {
-//                    if (strcmp(aux->keyword, str) == 0) break; // evita inserções repetidas de uma mesma keyword.
-//                    aux = aux->next;
-//                }
-//                // liga o novo registro à coleção com o mesmo código hash.
-//                aux->next = reg;
-//            }
-//        }
         fclose(file);
     }
     else
@@ -265,9 +263,9 @@ int index_put(const Index* idx, const char* key)
             }
             else
             {
-                // verifica palavras maiores que 16 caracteres. (TESTAR ISSO...)
+                // verifica palavras maiores que 16 caracteres.
                 if (i >= BUFF_SIZE) continue;
-                word[i++] = c;
+                word[i++] = tolower(c);
 
                 if (strcmp(word, key) == 0)
                 {
