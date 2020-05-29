@@ -138,6 +138,12 @@ static int hash_function(Index* idx, const char* key)
 
 int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 {
+    if (*idx != NULL)
+    {
+        printf("Pointer 'idx' is not NULL!");
+        return 1;
+    }
+
     // inicializa o índice remissivo.
     *idx = (Index*)malloc(sizeof(Index));
     (*idx)->numKeywords = 0;
@@ -203,6 +209,8 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 }
 int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocurrences)
 {
+    if (idx == NULL) { printf("Null pointer!\n"); return 1; }
+
     int hash = hash_function(idx, key);
     Registry* reg = idx->hash_table[hash];
 
@@ -234,6 +242,8 @@ int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocu
 }
 int index_put(const Index* idx, const char* key)
 {
+    if (idx == NULL) { printf("Null pointer!\n"); return 1; }
+
     FILE* file = fopen(idx->textFile, "r");
     rewind(file); int ans = -1;
 
@@ -381,6 +391,8 @@ int index_print(const Index* idx)
 {
     char** keywords;
     get_array_keywords(idx, &keywords);
+
+    if (idx == NULL) { printf("Null pointer.\n");  return 1; }
 
     // a partir do vetor de keywords ordenado, são feitas as consultas na tabela hash.
     for (int i = 0; i < idx->numKeywords; i++)
