@@ -140,7 +140,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
 {
     if (*idx != NULL)
     {
-        printf("Pointer 'idx' is not NULL!");
+        printf("Pointer 'idx' is not NULL!\n");
         return 1;
     }
 
@@ -279,20 +279,26 @@ int index_put(const Index* idx, const char* key)
 
                 if (strcmp(word, key) == 0)
                 {
-                    num_occurrences++;
-                    Occurrence* occ = occurrences[current_line - 1];
+                    char c_next = fgetc(file);
+                    ungetc(c_next, file);
 
-                    // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
-                    if (occ == 0)
+                    if (!isalpha(c_next))
                     {
-                        occ = (Occurrence*)malloc(sizeof(Occurrence));
-                        occ->num_occurrence = 1;
-                        occ->line = current_line;
-                        occurrences[current_line - 1] = occ;
-                    }
-                    else
-                    {
-                        occ->num_occurrence++;
+                        num_occurrences++;
+                        Occurrence* occ = occurrences[current_line - 1];
+
+                        // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
+                        if (occ == 0)
+                        {
+                            occ = (Occurrence*)malloc(sizeof(Occurrence));
+                            occ->num_occurrence = 1;
+                            occ->line = current_line;
+                            occurrences[current_line - 1] = occ;
+                        }
+                        else
+                        {
+                            occ->num_occurrence++;
+                        }
                     }
                 }
             }
