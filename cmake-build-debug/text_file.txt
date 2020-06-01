@@ -1,4 +1,4 @@
-(the_choice)             Good programming is not learned from readers
+2-Rablais (choice)             Good programming is not learned from readers
 generalities, but by seeing reader how significant
 programs can be made clean, easy to
 read, easy   _ to ____ maintain and modify,

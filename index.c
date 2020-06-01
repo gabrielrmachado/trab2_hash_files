@@ -184,6 +184,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         }
         while (1);
     }
+    else { fprintf(stderr, "\nFile %s not found.", text_file); return 1; }
     fclose(file);
 
     // faz a leitura do arquivo de palavras-chave.
@@ -198,7 +199,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
             // remove o '\n' da string.
             char* pos = strchr(str, '\n');
             if (pos != NULL) *pos = '\0';
-            insert_keyword(idx, strlwr(trim(str)));
+            insert_keyword(idx, strlwr((str)));
         }
 
         fclose(file);
@@ -230,6 +231,7 @@ int index_get(const Index* idx, const char* key, int** occurrences, int* num_ocu
 {
     if (idx == NULL) { printf("Null pointer!\n"); return 1; }
 
+    strcpy(key, strlwr(key));
     int hash = hash_function(idx, key);
     Registry* reg = idx->hash_table[hash];
 
@@ -276,6 +278,7 @@ int index_put(const Index* idx, const char* key)
 
         do
         {
+            key = strlwr(key);
             if (feof(file)) break;
             int c = fgetc(file);
 

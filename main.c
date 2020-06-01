@@ -52,7 +52,7 @@ int program2(int argc, char** argv)
                 clear_screen();
                 if (index_createfrom(argv[1], argv[2], &idx))
                 {
-                    fprintf(stderr, "Error when creating index.\n");
+                    fprintf(stderr, "\nError when creating index.\n");
                     return 1;
                 }
                 else printf("Index created successfully!\n");
@@ -76,7 +76,7 @@ int program2(int argc, char** argv)
             case 3:
                 clear_screen();
                 char keyword[17];
-                printf("Which keyword do you wish to look for?\n");
+                printf("Type the keyword you wish to look for: ");
                 scanf(" %16[^\n]", keyword);
 
                 int* occurrences; int n_occurrences;
@@ -178,6 +178,6 @@ int program1(int argc, char** argv)
 
 int main(int argc, char** argv)
 {
-    char*  argv_param[] = {"Hash_Index", "keys_file2.txt", "text_file2.txt"};
+    char* argv_param[] = {"Hash_Index", "keys_file.txt", "text_file.txt"};
     return program2(3, argv_param);
 }
