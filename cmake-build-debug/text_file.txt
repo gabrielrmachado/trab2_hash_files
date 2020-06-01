@@ -1,5 +1,5 @@
-(the_choice)             Good programming is not learned from
-generalities, but by seeing how significant
+(the_choice)             Good programming is not learned from readers
+generalities, but by seeing reader how significant
 programs can be made clean, easy to
 read, easy   _ to ____ maintain and modify,
 human-engineered, efficient, and reliable (the choice),

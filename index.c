@@ -36,6 +36,25 @@ struct index
     Registry** hash_table; // a tabela hash.
 };
 
+static char *ltrim(char *s)
+{
+    while(isspace(*s)) s++;
+    return s;
+}
+
+static char *rtrim(char *s)
+{
+    char* back = s + strlen(s);
+    while(isspace(*--back));
+    *(back+1) = '\0';
+    return s;
+}
+
+static char *trim(char *s)
+{
+    return rtrim(ltrim(s));
+}
+
 static short insert_keyword(Index** idx, const char* keyword)
 // insere, em tempo de execução, uma nova keyword na lista encadeada '(*idx)->keywords'.
 {
@@ -179,7 +198,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
             // remove o '\n' da string.
             char* pos = strchr(str, '\n');
             if (pos != NULL) *pos = '\0';
-            insert_keyword(idx, str);
+            insert_keyword(idx, strlwr(trim(str)));
         }
 
         fclose(file);
@@ -263,6 +282,7 @@ int index_put(const Index* idx, const char* key)
             // separa as palavras da frase capturada.
             if (c == '\n' || c == '\t' || c == ' ')
             {
+                //strstr
                 if (strcmp(word, "") == 0)
                 {
                     if (c == '\n') current_line++;

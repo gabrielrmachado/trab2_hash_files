@@ -178,6 +178,6 @@ int program1(int argc, char** argv)
 
 int main(int argc, char** argv)
 {
-    char* argv_param[] = {"", "keys_file.txt", "text_file.txt"};
+    char*  argv_param[] = {"Hash_Index", "keys_file2.txt", "text_file2.txt"};
     return program2(3, argv_param);
 }
