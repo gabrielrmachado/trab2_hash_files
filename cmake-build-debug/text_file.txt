@@ -1,7 +1,7 @@
 2-Rablais (choice)             Good programming is not learned from readers
 generalities, but by seeing reader how significant
-programs can be made clean, easy to
-read, easy   _ to ____ maintain and modify,
-human-engineered, efficient, and reliable (the choice),
+programs can be made clean, easy to                     _
+read, easy    to ____ maintain and modify,
+human-engineered, efficient, and reliable choice),
 by the application of common sense and
 by the use of good programming practices.

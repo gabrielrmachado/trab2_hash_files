@@ -429,6 +429,7 @@ int index_print(const Index* idx)
         char keyword[BUFF_SIZE]; strcpy(keyword, keywords[i]);
         int* occurrences; int num_occurrences;
 
+        index_put(idx, keyword);
         index_get(idx, keyword, &occurrences, &num_occurrences);
 
         if (num_occurrences > 0)
