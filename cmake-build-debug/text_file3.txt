@@ -1,4 +1,4 @@
-I was recently reading the preface to Kent Beck's book Implementation Patterns.1 He says, "... this book is based on a rather fragile premise: that 
+I was recently reading the preface to Kent Beck's book Implementation Patterns. He says, "... this book is based on a rather fragile premise: that
 good code matters..." A fragile premise? I disagree! I think that premise is one of the most robust, supported, and overloaded of all the premises in our craft (and I think Kent knows it). We know good code matters because we've had to deal for so long with its lack.
 I know of one company that, in the late 80s, wrote a killer app. It was very popular, and lots of professionals bought and used it. But then the release cycles began to stretch. 
 Bugs were not repaired from one release to the next. Load times grew and crashes increased. I remember the day I shut the product down in frustration and never used it again. The company went out of business a short time after that.
