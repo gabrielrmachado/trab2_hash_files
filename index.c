@@ -285,7 +285,6 @@ int index_put(const Index* idx, const char* key)
             // separa as palavras da frase capturada.
             if (c == '\n' || c == '\t' || c == ' ')
             {
-                //strstr
                 if (strcmp(word, "") == 0)
                 {
                     if (c == '\n') current_line++;
@@ -297,30 +296,53 @@ int index_put(const Index* idx, const char* key)
             else
             {
                 // verifica palavras maiores que 16 caracteres.
+                short hasPreviousLetter = 0;
                 if (i >= BUFF_SIZE) continue;
                 word[i++] = tolower(c);
 
-                if (strcmp(word, key) == 0)
+                char* p = strstr(word, key);
+                if (p != NULL)
                 {
-                    char c_next = fgetc(file);
-                    ungetc(c_next, file);
-
-                    if (!isalpha(c_next))
+                    int index = p - word;
+                    if (index > 0)
                     {
-                        num_occurrences++;
-                        Occurrence* occ = occurrences[current_line - 1];
-
-                        // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
-                        if (occ == 0)
+                        for (int k = 0; k < index; k++)
                         {
-                            occ = (Occurrence*)malloc(sizeof(Occurrence));
-                            occ->num_occurrence = 1;
-                            occ->line = current_line;
-                            occurrences[current_line - 1] = occ;
+                            if (isalpha(word[k]))
+                            {
+                                hasPreviousLetter = 1;
+                                break;
+                            }
                         }
-                        else
+                    }
+                    if (strcmp(word, key) == 0 || hasPreviousLetter == 0)
+                    {
+                        char c_next = fgetc(file);
+                        ungetc(c_next, file);
+
+                        if (hasPreviousLetter == 0)
                         {
-                            occ->num_occurrence++;
+                            memset(word, '\0', sizeof(char) * BUFF_SIZE);
+                            i = 0;
+                        }
+
+                        if (!isalpha(c_next))
+                        {
+                            num_occurrences++;
+                            Occurrence* occ = occurrences[current_line - 1];
+
+                            // assegura que a atual linha de texto não seja repetida várias vezes em 'occurrences'.
+                            if (occ == 0)
+                            {
+                                occ = (Occurrence*)malloc(sizeof(Occurrence));
+                                occ->num_occurrence = 1;
+                                occ->line = current_line;
+                                occurrences[current_line - 1] = occ;
+                            }
+                            else
+                            {
+                                occ->num_occurrence++;
+                            }
                         }
                     }
                 }
