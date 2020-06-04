@@ -199,7 +199,7 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
             // remove o '\n' da string.
             char* pos = strchr(str, '\n');
             if (pos != NULL) *pos = '\0';
-            insert_keyword(idx, strlwr((str)));
+            insert_keyword(idx, strlwr(trim(str)));
         }
 
         fclose(file);
