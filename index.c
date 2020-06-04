@@ -217,10 +217,12 @@ int index_createfrom(const char* key_file, const char* text_file, Index** idx)
         return 1;
     }
 
+    printf("%d keywords from %s are about to be inserted into the index...\n", (*idx)->numKeywords, key_file);
     Keyword* kw = (*idx)->keywords;
     for (int i = 0; i < (*idx)->numKeywords; i++)
     {
         // verifica as ocorrências de cada palavra-chave no texto.
+        printf("'%s'\n", kw->keyword);
         index_put(*idx, kw->keyword);
         kw = kw->next;
     }
