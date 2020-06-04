@@ -306,6 +306,7 @@ int index_put(const Index* idx, const char* key)
                     int index = p - word;
                     if (index > 0)
                     {
+                        // verifica se há algum caractere irrelevante à esquerda, ou seja, que não seja uma letra.
                         for (int k = 0; k < index; k++)
                         {
                             if (isalpha(word[k]))
