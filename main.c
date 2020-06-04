@@ -99,7 +99,6 @@ int program2(int argc, char** argv)
 
             case 4:
                 clear_screen();
-                printf("Full index:\n\n");
                 if (index_print(idx))
                 {
                     fprintf(stderr, "Error when printing new index.\n");

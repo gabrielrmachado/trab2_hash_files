@@ -450,6 +450,8 @@ int index_print(const Index* idx)
     printf("Do you want to update the index? (Y/N): ");
     char ans_c; scanf(" %c", &ans_c);
 
+    printf("FULL INDEX:\n\n");
+
     // a partir do vetor de keywords ordenado, são feitas as consultas na tabela hash.
     for (int i = 0; i < idx->numKeywords; i++)
     {
