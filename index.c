@@ -447,6 +447,8 @@ int index_print(const Index* idx)
     get_array_keywords(idx, &keywords);
 
     if (idx == NULL) { printf("Null pointer.\n");  return 1; }
+    printf("Do you want to update the index? (Y/N): ");
+    char ans_c; scanf(" %c", &ans_c);
 
     // a partir do vetor de keywords ordenado, são feitas as consultas na tabela hash.
     for (int i = 0; i < idx->numKeywords; i++)
@@ -454,7 +456,9 @@ int index_print(const Index* idx)
         char keyword[BUFF_SIZE]; strcpy(keyword, keywords[i]);
         int* occurrences; int num_occurrences;
 
-        index_put(idx, keyword);
+        if (toupper(ans_c) == 'Y')
+            index_put(idx, keyword);
+
         index_get(idx, keyword, &occurrences, &num_occurrences);
 
         if (num_occurrences > 0)
