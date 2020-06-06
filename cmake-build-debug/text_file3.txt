@@ -9,7 +9,7 @@ Of course you have been impeded by bad code. So then—why did you write it?
 
 
 Were you trying to go fast? Were you in a rush? Probably so. Perhaps you felt that you
-didn’t have time to do a good job; that your boss would be angry with you if you took the
+didn't have time to do a good job; that your boss would be angry with you if you took the
 time to clean up your code. Perhaps you were just tired of working on this program and
 wanted it to be over. Or maybe you looked at the backlog of other stuff that you had promised to get done and realized that you needed to slam this module together so you could
 move on to the next. We have all done it.
@@ -20,4 +20,4 @@ course, in those days we didn't know LeBlanc's law: Later equals never.
 
 
 
-Robert C. Martin - Uncle Bob.
+Robert C. Martin - Uncle Bob - Clean Code Book, 03, 2009.
