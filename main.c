@@ -57,6 +57,7 @@ int program2(int argc, char** argv)
                 }
                 else printf("Index created successfully!\n");
                 pause_screen();
+                clear_screen();
                 break;
 
             case 2:
@@ -71,6 +72,7 @@ int program2(int argc, char** argv)
                 }
                 else printf("Keyword '%s' inserted/updated successfully!\n", new_keyword);
                 pause_screen();
+                clear_screen();
                 break;
 
             case 3:
@@ -95,6 +97,7 @@ int program2(int argc, char** argv)
                     }
                 }
                 pause_screen();
+                clear_screen();
                 break;
 
             case 4:
@@ -105,6 +108,7 @@ int program2(int argc, char** argv)
                     return 1;
                 }
                 pause_screen();
+                clear_screen();
                 break;
 
             default:
