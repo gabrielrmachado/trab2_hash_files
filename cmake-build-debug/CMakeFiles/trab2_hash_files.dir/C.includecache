@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/gabriel/CLionProjects/trab2_hash_files/index.h
+
+/home/gabriel/CLionProjects/trab2_hash_files/main.c
+stdio.h
+-
+stdlib.h
+-
+unistd.h
+-
+index.h
+/home/gabriel/CLionProjects/trab2_hash_files/index.h
+

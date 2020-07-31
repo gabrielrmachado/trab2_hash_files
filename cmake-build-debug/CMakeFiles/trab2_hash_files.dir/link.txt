@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/trab2_hash_files.dir/main.c.o CMakeFiles/trab2_hash_files.dir/index.c.o  -o trab2_hash_files 
