@@ -6,9 +6,7 @@
 #include <string.h>
 #include "index.h"
 
-#include <string.h>
-#include<ctype.h>
-
+#if defined(unix) || defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
 static char* strlwr(char *str)
 {
     unsigned char *p = (unsigned char *)str;
@@ -19,6 +17,7 @@ static char* strlwr(char *str)
     }
     return str;
 }
+#endif
 
 typedef struct occurrence // struct para armazenar a qtde de repetições de uma keyword em uma mesma linha de texto.
 {

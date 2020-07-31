@@ -13,4 +13,6 @@ int index_print(const Index* idx);
 
 #define HASH_INDEX_INDEX_H
 
+
 #endif //HASH_INDEX_INDEX_H
+
